@@ -1,6 +1,6 @@
 namespace receipttracker
 {
-    public class WeatherForecast
+    public class Receipts
     {
         public DateOnly Date { get; set; }
 

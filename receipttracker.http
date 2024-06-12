@@ -1,6 +1,6 @@
 @receipttracker_HostAddress = http://localhost:5272
 
-GET {{receipttracker_HostAddress}}/weatherforecast/
+GET {{receipttracker_HostAddress}}/receipts/
 Accept: application/json
 
 ###
