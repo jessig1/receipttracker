@@ -16,58 +16,73 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.MapGet("/", () => "Hello World!");
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.MapGet("/budgetitems", async (BudgetDb db) =>
-    await db.Budgets.ToListAsync());
 
-app.MapGet("/budgetitems/complete", async (BudgetDb db) =>
-    await db.Budgets.Where(t => t.IsComplete).ToListAsync());
+var budgetItems = app.MapGroup("/budgetitems");
 
-app.MapGet("/budgetitems/{id}", async (int id, BudgetDb db) =>
-    await db.Budgets.FindAsync(id)
+budgetItems.MapGet("/", GetAllBudgets);
+budgetItems.MapGet("/complete", GetCompleteBudgets);
+budgetItems.MapGet("/{id}", GetBudget);
+budgetItems.MapPost("/", CreateBudget);
+budgetItems.MapPut("/{id}", UpdateBudget);
+budgetItems.MapDelete("/{id}", DeleteBudget);
+
+
+static async Task<IResult> GetAllBudgets(BudgetDb db)
+{
+    return TypedResults.Ok(await db.Budgets.ToArrayAsync());
+}
+
+static async Task<IResult> GetCompleteBudgets(BudgetDb db)
+{
+    return TypedResults.Ok(await db.Budgets.Where(t => t.IsComplete).ToListAsync());
+}
+
+static async Task<IResult> GetBudget(int id, BudgetDb db)
+{
+    return await db.Budgets.FindAsync(id)
         is Budget budget
-            ? Results.Ok(budget)
-            : Results.NotFound());
+            ? TypedResults.Ok(budget)
+            : TypedResults.NotFound();
+}
 
-app.MapPost("/budgetitems", async (Budget budget, BudgetDb db) =>
+static async Task<IResult> CreateBudget(Budget budget, BudgetDb db)
 {
     db.Budgets.Add(budget);
     await db.SaveChangesAsync();
 
-    return Results.Created($"/budgetitems/{budget.Id}", budget);
-});
+    return TypedResults.Created($"/budgetitems/{budget.Id}", budget);
+}
 
-app.MapPut("/budgetitems/{id}", async (int id, Budget inputBudget, BudgetDb db) =>
+static async Task<IResult> UpdateBudget(int id, Budget inputBudget, BudgetDb db)
 {
     var Budget = await db.Budgets.FindAsync(id);
 
-    if (Budget is null) return Results.NotFound();
+    if (Budget is null) return TypedResults.NotFound();
 
     Budget.Name = inputBudget.Name;
     Budget.IsComplete = inputBudget.IsComplete;
 
     await db.SaveChangesAsync();
 
-    return Results.NoContent();
-});
+    return TypedResults.NoContent();
+}
 
-app.MapDelete("/budgetitems/{id}", async (int id, BudgetDb db) =>
+static async Task<IResult> DeleteBudget(int id, BudgetDb db)
 {
-    if (await db.Budgets.FindAsync(id) is Budget Budget)
+    if (await db.Budgets.FindAsync(id) is Budget budget)
     {
-        db.Budgets.Remove(Budget);
+        db.Budgets.Remove(budget);
         await db.SaveChangesAsync();
-        return Results.NoContent();
+        return TypedResults.NoContent();
     }
 
-    return Results.NotFound();
-});
-
+    return TypedResults.NotFound();
+}
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
