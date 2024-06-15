@@ -1,6 +1,42 @@
-@receipttracker_HostAddress = http://localhost:5272
+@receipttracker_HostAddress = https://localhost:7026
 
 GET {{receipttracker_HostAddress}}/receipts/
 Accept: application/json
+
+###
+
+POST {{receipttracker_HostAddress}}/api/[ReceiptController]
+Content-Type: application/json
+
+{
+  //Receipt
+}
+
+###
+
+GET {{receipttracker_HostAddress}}/api/[ReceiptController]/0
+
+###
+
+POST {{receipttracker_HostAddress}}/budgetitems
+Content-Type: application/json
+
+{
+  "name":"test",
+  "description":"test",
+  "amount":123,
+  "isComplete":true
+}
+###
+
+GET {{receipttracker_HostAddress}}/budgetitems/{id}
+
+###
+
+PUT {{receipttracker_HostAddress}}/budgetitems/{id}
+
+###
+
+DELETE {{receipttracker_HostAddress}}/budgetitems/{id}
 
 ###
